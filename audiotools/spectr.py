@@ -108,7 +108,7 @@ def main():
                         help='waveform color')
     parser.add_argument('--show', action='store_true',
                         help='open a window instead of saving to file')
-    parser.add_argument('--format', action='store', choices=['png', 'pdf', 'svg'],
+    parser.add_argument('-f', '--format', action='store', choices=['png', 'pdf', 'svg'],
                         default="png",
                         help='output plot format')
     

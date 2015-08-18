@@ -6,6 +6,7 @@ OUTPUT_DIR = 'generated'
 FORCE_HILBERT = False
 
 import sys
+import struct
 
 import os.path
 from   scipy.io import wavfile       # wave file support
@@ -51,7 +52,7 @@ def open_audio(filename):
         raise NotAWaveFileError(filename)
     try:
         fs, data = wavfile.read(filename)
-    except ValueError:
+    except:
         fs, sampwidth, data = wavio.readwav(filename)
         print "\t%s is a %dbit audio file" % (os.path.basename(filename), 8*sampwidth)
         

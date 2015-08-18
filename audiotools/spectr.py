@@ -93,6 +93,7 @@ def spectr_wave(sound):
         print "output in {}".format(_pdffilename)
         
     plt.close()
+    plt.clf()
     
 def parse():
     

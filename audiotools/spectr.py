@@ -91,8 +91,10 @@ def spectr_wave(sound):
     else:
         plt.savefig(_pdffilename, dpi=_dpi)
         print "output in {}".format(_pdffilename)
+        
+    plt.close()
     
-def main():
+def parse():
     
     parser = argparse.ArgumentParser(
         description='Plot a spectrogram and a waveform')
@@ -114,11 +116,10 @@ def main():
     
     
     args = parser.parse_args()
-    
+        
     global _dpi, _color, _show, _pdffilename, _format
 
     _use_latex = args.latex
-    
     
     _format      = args.format
     _pdffilename = args.output if args.output else 'spectr-wave-%s.%s' % (os.path.basename(args.soundfile)[0:-4], _format)
@@ -128,8 +129,10 @@ def main():
     
     __init__()
     
-    spectr_wave(args.soundfile)
-    
+    return args.soundfile
+
 if __name__ == "__main__":
     
-    main()
+    soundfile = parse()
+    spectr_wave(soundfile)
+    

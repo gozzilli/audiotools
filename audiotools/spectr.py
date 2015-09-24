@@ -50,8 +50,9 @@ def spectr_wave(sound):
     (data, fs, enc) = open_audio(sound)
 #     data = data[fs*15:fs*58]
 
+    figsize = tuple([int(x) for x in _size.split("x")])
     
-    fig = plt.figure(figsize=(10,8))
+    fig = plt.figure(figsize=figsize)
     fig.subplots_adjust(hspace=0.2,)
     
     ax1 = plt.subplot2grid((6,1), (4,0), rowspan=2)    
@@ -79,7 +80,7 @@ def spectr_wave(sound):
     
     ax.autoscale(tight=True)           # no space between plot an axes
     #ax.get_xaxis().set_visible(False) # remove the x tick for top plot
-    yticks = np.arange(0,fs/2,5000)    # |
+    yticks = np.arange(0,fs/2,1000)    # |
     ax.set_yticks(yticks)              # |
     ax.set_yticklabels(yticks/1000)    # |
     ax.set_ylabel("Frequency (kHz)")        # |> change Hz to kHz
@@ -109,6 +110,8 @@ def parse():
                         help='dpi (default 150)')
     parser.add_argument('-c', '--color', action='store',
                         help='waveform color')
+    parser.add_argument('-s', '--size', action='store',
+                        help='image size in inches WxH (e.g. 12x7)')
     parser.add_argument('--show', action='store_true',
                         help='open a window instead of saving to file')
     parser.add_argument('-f', '--format', action='store', choices=['png', 'pdf', 'svg'],
@@ -118,7 +121,7 @@ def parse():
     
     args = parser.parse_args()
         
-    global _dpi, _color, _show, _pdffilename, _format
+    global _dpi, _color, _show, _pdffilename, _format, _size
 
     _use_latex = args.latex
     
@@ -127,13 +130,19 @@ def parse():
     _dpi         = args.dpi    if args.dpi    else _dpi
     _color       = args.color  if args.color  else _color
     _show        = args.show
+    _size        = args.size
+    
+    if len(_size.split('x')) != 2:
+        raise ValueError("size much be in inches in the format WxH (e.g. 12x7)")
     
     __init__()
     
     return args.soundfile
 
-if __name__ == "__main__":
-    
+def main():
     soundfile = parse()
     spectr_wave(soundfile)
+
+if __name__ == "__main__":
     
+    main()

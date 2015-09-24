@@ -39,6 +39,7 @@ _use_latex = False
 _dpi       = 150
 _color     = '#005c84'
 _show      = False
+_size      = "10x6"
 
 def spectr_wave(sound):
     ''' 

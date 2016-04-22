@@ -51,10 +51,14 @@ def open_audio(filename):
     if not filename.lower().endswith(".wav"):
         raise NotAWaveFileError(filename)
     try:
-        fs, data = wavfile.read(filename)
-    except:
         fs, sampwidth, data = wavio.readwav(filename)
-        print "\t%s is a %dbit audio file" % (os.path.basename(filename), 8*sampwidth)
+        #fs, data = wavfile.read(filename)
+#     except:
+#         try:
+#             fs, sampwidth, data = wavio.readwav(filename)
+#             print "\t%s is a %dbit audio file" % (os.path.basename(filename), 8*sampwidth)
+    except Exception as e:
+        raise e
         
     enc = None
     #data, fs, enc = audiolab.wavread(sound) # same with audiolab

@@ -1,22 +1,21 @@
-FORMAT = 'pgf' ## please only set 'pgf' or 'pdf'
+from __future__ import print_function
+
+FORMAT = 'pgf' ## only set 'pgf' or 'pdf'
 DEPLOY = True
 DPI    = 150
 OUTPUT_DIR = 'generated'
 
 FORCE_HILBERT = False
 
-import sys
-import struct
-
 import os.path
-from   scipy.io import wavfile       # wave file support
-import scipy.signal                  # filters and what not
-import numpy as np                   # other mathematical library
-#from matplotlib import pyplot as plt # plotting
-import pickle                        # avoid running results a million times
-import shutil, glob
-import wavio
 
+import numpy as np
+from   scipy.io import wavfile
+import scipy.signal  
+
+from . import wavio
+
+#from matplotlib import pyplot as plt # plotting
 def open_audio_simple(filename):
     '''
     open audio file with scipy or audiolab, depending on what is available.
@@ -58,6 +57,7 @@ def open_audio(filename):
 #             fs, sampwidth, data = wavio.readwav(filename)
 #             print "\t%s is a %dbit audio file" % (os.path.basename(filename), 8*sampwidth)
     except Exception as e:
+        print (filename)
         raise e
         
     enc = None
@@ -99,19 +99,24 @@ def savefig(filename, dpi=DPI):
                 ), dpi=dpi)
 
 
-def hilbert(sound, data):
-    if not FORCE_HILBERT:
-        hilbert = pickle.load( open( sound+'-envelope.data', 'rb' ) )
-        print "hilbert loaded from pickle"
-    else:
-        print "starting hilbert"
-        hilbert = abs(scipy.signal.hilbert(data))
-        print "done hilbert"
-        pickle.dump( hilbert, open(sound+'-envelope.data', 'wb') )
-        print "hilbert pickled to file"
-    return hilbert
+def hilbert(data):
+    
+    return abs(scipy.signal.hilbert(data))
 
-def mkdir(dir_):
+def mkdir_p(dir_):
     if not os.path.exists(dir_):
         os.makedirs(dir_)
+        
+def closest_power2(data):
+    '''
+    Returns the highest power of 2 lower than the length of data.
+    '''
+    return np.power(2, np.floor(np.log2(len(data))))
+
+def sample_closest_power2(data):
+    '''
+    Returns a slice of the 1D array data of length the power of 2 closest to 
+    the length of data.
+    ''' 
+    return data[0: np.power(2, np.floor(np.log2(len(data))))]
         

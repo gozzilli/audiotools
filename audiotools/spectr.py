@@ -1,8 +1,9 @@
+from __future__ import print_function
 import argparse
 import os                       # for directory and file manipulation. Not always needed
 import numpy as np              # other mathematical library
 # from scikits import audiolab  # read audio files
-from utils import open_audio, downscale    # utilities to open and manipulate audio files
+from .utils import open_audio, downscale    # utilities to open and manipulate audio files
 
 _is_initialised = False
 _use_latex   = False
@@ -15,18 +16,18 @@ _vmin        = None
 _colorbar    = False
 _pdffilename = None
 
-def __init__():
+def __init__(show=_show, use_latex=_use_latex):
     
     global matplotlib, plt, _is_initialised
     
     import matplotlib
-    if not _show:
+    if not show:
         matplotlib.use('pdf')
         
     from matplotlib import pyplot as plt  # @UnusedImport
     from matplotlib import rc
     
-    if _use_latex:
+    if use_latex:
         rc('text', usetex=True)
         rc('font', family='serif')
         
@@ -40,7 +41,8 @@ def __init__():
     _is_initialised = True
 
 
-def spectr_wave(sound):
+def spectr_wave(sound, title="", size=_size, colorbar=_colorbar, 
+                figname=_pdffilename, show=_show):
     ''' 
     Same as `audiolab_test2`, except that also:
     
@@ -49,14 +51,13 @@ def spectr_wave(sound):
     
     if not _is_initialised:
         ## not coming from main()
-        global _show
-        _show = True
-        __init__()
+        # show = True
+        __init__(show)
     
     (data, fs, _) = open_audio(sound)
     # data = data[fs*15:fs*58]
 
-    figsize = tuple([int(x) for x in _size.split("x")])
+    figsize = tuple([int(x) for x in size.split("x")])
     
     fig = plt.figure(figsize=figsize)
     fig.subplots_adjust(hspace=0.2,)
@@ -86,7 +87,7 @@ def spectr_wave(sound):
                            rasterized=True,
                            vmin=_vmin, vmax=_vmax)
     
-    if _colorbar:
+    if colorbar:
         plt.colorbar(im)
     
     ax.autoscale(tight=True)           # no space between plot an axes
@@ -98,14 +99,13 @@ def spectr_wave(sound):
     ax.tick_params(labelbottom='off') # labels along the bottom edge are off        
 
 
-    if _show:
+    if show:
         plt.show()
     else:
-        if _pdffilename:
-            fig.savefig(_pdffilename, dpi=_dpi)
-            print "output in {}".format(_pdffilename)
-        else:
-            print "Warning: output filename not specified and figure.show() disabled."
+        if not figname:
+            figname = 'spectr-wave-%s.%s' % (os.path.basename(sound)[0:-4], _format)
+        fig.savefig(figname, dpi=_dpi)
+        print ("output in {}".format(figname))
      
     plt.clf()   
     plt.close(fig)
@@ -118,11 +118,13 @@ def parse():
     parser = argparse.ArgumentParser(
         description='Plot a spectrogram and a waveform')
     
-    parser.add_argument('soundfile', metavar='filename', type=str,
+    parser.add_argument('soundfiles', metavar='filename', type=str, nargs='+',
                        help='the sound file to plot')
     parser.add_argument('--latex', action='store_true', help='use latex')
     parser.add_argument('-o', '--output', action='store',
                         help='output file')
+    parser.add_argument('-O', '--output-dir', action='store',
+                        help='output directory')
     parser.add_argument('-d', '--dpi', action='store',
                         help='dpi (default 150)')
     parser.add_argument('-c', '--color', action='store',
@@ -145,12 +147,13 @@ def parse():
     
     args = parser.parse_args()
         
-    global _dpi, _color, _show, _pdffilename, _format, _size, _vmin, _vmax, _colorbar
+    global _dpi, _color, _show, _pdffilename, _format, _size, _vmin, _vmax, _colorbar, _outdir
 
     _use_latex = args.latex
     
     _format      = args.format
-    _pdffilename = args.output if args.output else 'spectr-wave-%s.%s' % (os.path.basename(args.soundfile)[0:-4], _format)
+    _outdir      = args.output_dir
+    _pdffilename = args.output 
     _dpi         = args.dpi    if args.dpi    else _dpi
     _color       = args.color  if args.color  else _color
     _show        = args.show   if args.show   else _show
@@ -159,17 +162,22 @@ def parse():
     _vmax        = args.vmax 
     _colorbar    = args.colorbar
     
+    if _pdffilename and os.path.isabs(_pdffilename) and _outdir:
+        parser.error("Output directory specified but output file is an absolute path.")
+    
+    
     if len(_size.split('x')) != 2:
-        raise ValueError("size much be in inches in the format WxH (e.g. 12x7)")
+        parser.error("size much be in inches in the format WxH (e.g. 12x7)")
     
     __init__()
     
-    return args.soundfile
+    return args.soundfiles
 
 def main():
 
-    soundfile = parse()
-    spectr_wave(soundfile)
+    soundfiles = parse()
+    for sf in soundfiles:
+        spectr_wave(sf)
     
     #import gc
     #gc.collect()  # don't care about stuff that would be garbage collected properly

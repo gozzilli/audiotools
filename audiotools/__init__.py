@@ -1,0 +1,1 @@
+from .spectr import spectr_wave

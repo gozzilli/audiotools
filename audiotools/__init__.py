@@ -1,1 +1,1 @@
-from .spectr import spectr_wave
+from .cli import spectr_wave

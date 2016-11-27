@@ -47,3 +47,6 @@ docs/_build/
 # Mac OS stuff
 .DS_Store
 ._.DS_Store
+
+# PyCharm
+.idea/

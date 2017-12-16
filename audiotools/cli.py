@@ -3,6 +3,7 @@ import os
 import argparse
 
 # from scikits import audiolab  # read audio files
+from audiotools import utils
 from . import config
 
 _is_initialised = False
@@ -45,6 +46,8 @@ def parse():
                         help='output file')
     parser.add_argument('-O', '--output-dir', action='store',
                         help='output directory')
+    parser.add_argument('-of', '--output-format', action='store',
+                        help='output file name format (use {{FN}} for input file name)')
     parser.add_argument('-d', '--dpi', action='store',
                         help='dpi (default 150)')
     parser.add_argument('-c', '--color', action='store',
@@ -67,13 +70,14 @@ def parse():
     
     args = parser.parse_args()
 
-    global _dpi, _color, _show, _pdffilename, _format, _size, _vmin, _vmax, _colorbar, _outdir
+    global _dpi, _color, _show, _pdffilename, _pdffileformat, _format, _size, _vmin, _vmax, _colorbar, _outdir
 
     _use_latex = args.latex
     
     _format      = args.format
     _outdir      = args.output_dir
     _pdffilename = args.output if args.output else ""
+    _pdffileformat = args.output_format if args.output_format else None
     _dpi         = args.dpi    if args.dpi    else config.DPI
     _color       = args.color  if args.color  else config.COLOR
     _show        = args.show   if args.show   else config.SHOW
@@ -97,7 +101,7 @@ def spectr_wave():
     soundfiles = parse()
     from . import spectr  # needs to be after a call to matplotlib_init()
 
-    global _size, _pdffilename
+    global _size, _pdffilename, _pdffileformat
 
     for sf in soundfiles:
         fig = spectr.spectr_wave(sf, figsize=_size, colorbar=_colorbar)
@@ -109,11 +113,19 @@ def spectr_wave():
             plt.show()
 
         else:
+            if _pdffileformat:
+                _pdffilename = _pdffileformat.replace("{{FN}}", os.path.basename(sf)[0:-4])
+                if not _pdffilename.endswith(_format):
+                    _pdffilename += ("."+_format)
             if not _pdffilename:
                 _pdffilename = 'spectr-wave-%s.%s' % (os.path.basename(sf)[0:-4], _format)
+            if _outdir and _outdir not in _pdffilename:
+                utils.mkdir_p(_outdir)
+                _pdffilename = os.path.join(_outdir, os.path.basename(_pdffilename))
             fig.savefig(_pdffilename, dpi=_dpi)
             print("output in {}".format(_pdffilename))
 
+            _pdffilename = None # reset at each iteration
             plt.clf()
             plt.close(fig)
 

@@ -1,8 +1,7 @@
-import os.path
-
 import numpy as np
 from matplotlib import pyplot as plt
 plt.style.use("ggplot")
+plt.rcParams["axes.grid"] = False
 
 from .utils import open_audio, downscale    # utilities to open and manipulate audio files
 from . import config

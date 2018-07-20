@@ -35,6 +35,10 @@ def open_audio_simple(filename):
     return (data, fs, enc)
 
 
+class AudioFileError(Exception):
+    pass
+
+
 class NotAWaveFileError(Exception):
     def __init__(self, filename):
         self.filename = filename
@@ -50,15 +54,15 @@ def open_audio(filename):
     if not filename.lower().endswith(".wav"):
         raise NotAWaveFileError(filename)
     try:
-        fs, sampwidth, data = wavio.readwav(filename)
-        #fs, data = wavfile.read(filename)
-#     except:
-#         try:
-#             fs, sampwidth, data = wavio.readwav(filename)
-#             print "\t%s is a %dbit audio file" % (os.path.basename(filename), 8*sampwidth)
-    except Exception as e:
-        print (filename)
-        raise e
+        # fs, sampwidth, data = wavio.readwav(filename)
+        fs, data = wavfile.read(filename)
+    except:
+        try:
+            fs, sampwidth, data = wavio.readwav(filename)
+            print("\t%s is a %dbit audio file" % (os.path.basename(filename), 8*sampwidth))
+        except Exception as e:
+            print (filename)
+            raise AudioFileError(f"Error on {filename}") from e
         
     enc = None
     #data, fs, enc = audiolab.wavread(sound) # same with audiolab
